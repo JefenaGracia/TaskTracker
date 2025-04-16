@@ -72,77 +72,78 @@
         </div>
     </div>
 </div>
-@section Scripts {
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPFdh8o3EQ1EzQ0gvS8m8DH5yU-3BvrwU&libraries=places&callback=initMap" async defer></script>
 
-    <script>let map, marker;
+@inject IConfiguration Configuration
 
-        function initMap() {
-            const latInput = document.getElementById("Latitude");
-            const lngInput = document.getElementById("Longitude");
-            const addressInput = document.getElementById("Address");
-            const addressPreview = document.getElementById("addressPreview");
+<script src="https://maps.googleapis.com/maps/api/js?key=@Configuration["GoogleMaps:ApiKey"]&libraries=places&callback=initMap" async defer></script>
 
-            const initialLat = parseFloat(latInput.value) || 39.8283;
-            const initialLng = parseFloat(lngInput.value) || -98.5795;
+<script>let map, marker;
 
-            const initialLocation = { lat: initialLat, lng: initialLng };
+    function initMap() {
+        const latInput = document.getElementById("Latitude");
+        const lngInput = document.getElementById("Longitude");
+        const addressInput = document.getElementById("Address");
+        const addressPreview = document.getElementById("addressPreview");
 
-            map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 5,
-                center: initialLocation,
-            });
+        const initialLat = parseFloat(latInput.value) || 39.8283;
+        const initialLng = parseFloat(lngInput.value) || -98.5795;
 
-            marker = new google.maps.Marker({
-                map: map,
-                position: initialLocation
-            });
+        const initialLocation = { lat: initialLat, lng: initialLng };
 
-            fetchAddress(initialLat, initialLng);
+        map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 5,
+            center: initialLocation,
+        });
 
-            map.addListener("click", e => {
-                const lat = e.latLng.lat();
-                const lng = e.latLng.lng();
-                marker.setPosition(e.latLng);
-                latInput.value = lat;
-                lngInput.value = lng;
-                fetchAddress(lat, lng);
-            });
+        marker = new google.maps.Marker({
+            map: map,
+            position: initialLocation
+        });
 
-            const input = document.getElementById("searchInput");
-            const autocomplete = new google.maps.places.Autocomplete(input);
-            autocomplete.bindTo("bounds", map);
+        fetchAddress(initialLat, initialLng);
 
-            autocomplete.addListener("place_changed", () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry) return;
+        map.addListener("click", e => {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            marker.setPosition(e.latLng);
+            latInput.value = lat;
+            lngInput.value = lng;
+            fetchAddress(lat, lng);
+        });
 
-                const lat = place.geometry.location.lat();
-                const lng = place.geometry.location.lng();
+        const input = document.getElementById("searchInput");
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.bindTo("bounds", map);
 
-                map.setCenter(place.geometry.location);
-                map.setZoom(14);
-                marker.setPosition(place.geometry.location);
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
+            if (!place.geometry) return;
 
-                latInput.value = lat;
-                lngInput.value = lng;
-                const address = place.formatted_address || "Unknown";
-                addressInput.value = address;
-                addressPreview.innerText = address;
-            });
-        }
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
 
-        async function fetchAddress(lat, lng) {
-    const apiKey = "AIzaSyAPFdh8o3EQ1EzQ0gvS8m8DH5yU-3BvrwU";
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
-    const response = await fetch(url);
-    const data = await response.json();
+            map.setCenter(place.geometry.location);
+            map.setZoom(14);
+            marker.setPosition(place.geometry.location);
 
-    if (data.status === "OK" && data.results.length > 0) {
-        const address = data.results[0].formatted_address;
-        document.getElementById("Address").value = address;
-        document.getElementById("addressPreview").innerText = address;
+            latInput.value = lat;
+            lngInput.value = lng;
+            const address = place.formatted_address || "Unknown";
+            addressInput.value = address;
+            addressPreview.innerText = address;
+        });
     }
-}
-</script>
+
+    async function fetchAddress(lat, lng) {
+        const apiKey = "AIzaSyAPFdh8o3EQ1EzQ0gvS8m8DH5yU-3BvrwU";
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.status === "OK" && data.results.length > 0) {
+            const address = data.results[0].formatted_address;
+            document.getElementById("Address").value = address;
+            document.getElementById("addressPreview").innerText = address;
+        }
+    }</script>
 }
