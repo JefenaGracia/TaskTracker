@@ -1,0 +1,139 @@
+﻿@page
+@model TaskTracker.Pages.Tasks.Create_TaskModel
+@{
+    ViewData["Title"] = "Create Task (New)";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm rounded">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Create New Task</h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                <input type="hidden" name="ProjectId" value="@Model.ProjectId" />
+                <input type="hidden" name="Address" id="Address" />
+
+                <div class="mb-3">
+                    <label class="form-label">📌 Title</label>
+                    <input class="form-control" name="Title" value="@Model.Title" placeholder="Enter task title" />
+                    <span class="text-danger">@Html.ValidationMessage("Title")</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">📊 Status</label>
+                    <select class="form-select" name="Status">
+                        <option selected="@("Pending" == Model.Status)">Pending</option>
+                        <option selected="@("In Progress" == Model.Status)">In Progress</option>
+                        <option selected="@("Completed" == Model.Status)">Completed</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">📅 Due Date</label>
+                    <input class="form-control" name="DueDate" type="date" value="@Model.DueDate.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">📍 Pick a Location</label>
+                    <input id="searchInput" class="form-control mb-2" type="text" placeholder="Search for a place..." />
+                    <div id="map" style="height: 400px; width: 100%;" class="rounded shadow-sm border"></div>
+                    <small class="text-muted d-block mt-2">📍 <strong>Selected Address:</strong> <span id="addressPreview" class="fw-semibold"></span></small>
+                </div>
+
+                <input type="hidden" name="Latitude" id="Latitude" />
+                <input type="hidden" name="Longitude" id="Longitude" />
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-page="/Projects/Details" asp-route-id="@Model.ProjectId" class="btn btn-outline-secondary">← Cancel</a>
+                    <button type="submit" class="btn btn-success">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPFdh8o3EQ1EzQ0gvS8m8DH5yU-3BvrwU&libraries=places&callback=initMap" async defer></script>
+
+    <script>let map, marker;
+
+        function initMap() {
+            const defaultLocation = { lat: 39.8283, lng: -98.5795 }; 
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 5,
+                center: defaultLocation,
+            });
+
+            marker = new google.maps.Marker({ map });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const userLoc = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(userLoc);
+                    map.setZoom(12);
+                });
+            }
+
+            map.addListener("click", e => {
+                const lat = e.latLng.lat();
+                const lng = e.latLng.lng();
+                marker.setPosition(e.latLng);
+                document.getElementById("Latitude").value = lat;
+                document.getElementById("Longitude").value = lng;
+                fetchAddress(lat, lng);
+            });
+
+            const input = document.getElementById("searchInput");
+            const autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.bindTo("bounds", map);
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) return;
+
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+
+                map.setCenter(place.geometry.location);
+                map.setZoom(15);
+                marker.setPosition(place.geometry.location);
+
+                document.getElementById("Latitude").value = lat;
+                document.getElementById("Longitude").value = lng;
+                document.getElementById("Address").value = place.formatted_address || "Unknown";
+                document.getElementById("addressPreview").innerText = place.formatted_address || "Unknown";
+            });
+        }
+
+        async function fetchAddress(lat, lng) {
+            try {
+                const apiKey = "AIzaSyAPFdh8o3EQ1EzQ0gvS8m8DH5yU-3BvrwU";
+                const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                console.log("[DEBUG] Geocode API Response:", data);  // <— Add this for debugging
+
+                let address = "Unknown";
+                if (data.status === "OK" && data.results.length > 0) {
+                    address = data.results[0].formatted_address;
+                } else {
+                    console.warn("[DEBUG] Geocode error or empty results:", data.status);
+                }
+
+                document.getElementById("Address").value = address;
+                document.getElementById("addressPreview").innerText = address;
+            } catch (error) {
+                console.error("Reverse geocoding failed:", error);
+                document.getElementById("Address").value = "Unknown";
+                document.getElementById("addressPreview").innerText = "Unknown";
+            }
+        }
+        </script>
+}

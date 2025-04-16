@@ -1,0 +1,40 @@
+﻿@page
+@model TaskTracker.Pages.Tasks.TaskMapModel
+@{
+    ViewData["Title"] = "Task Map";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm rounded">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">📍 Task Locations on Map</h4>
+        </div>
+
+        <div class="card-body">
+            <div id="map" style="height: 500px; width: 100%;" class="rounded border"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPFdh8o3EQ1EzQ0gvS8m8DH5yU-3BvrwU&callback=initMap" async defer></script>
+
+    <script>
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 4,
+                center: { lat: 39.8283, lng: -98.5795 } // Center of USA
+            });
+
+            const tasks = @Html.Raw(Json.Serialize(Model.TaskLocations));
+
+            tasks.forEach(task => {
+                new google.maps.Marker({
+                    position: { lat: task.lat, lng: task.lng },
+                    map: map,
+                    title: task.title
+                });
+            });
+        }
+    </script>
+}

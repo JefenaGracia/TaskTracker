@@ -1,0 +1,126 @@
+﻿@page "{id:int}"
+@model TaskTracker.Pages.Projects.DetailsModel
+@{
+    ViewData["Title"] = "Project Details";
+}
+
+<div class="container mt-4">
+
+    <!-- 📁 Project Card -->
+    <!-- 🌟 Project Info Header -->
+    <div class="p-4 mb-4 rounded shadow-sm" style="background-color: #f9f9fc;">
+        <h2 class="fw-bold text-primary mb-1">@Model.Project.Name</h2>
+        <p class="mb-2 text-muted">@Model.Project.Description</p>
+        <div class="text-muted small">
+            <i class="bi bi-calendar-event"></i>
+            Created on: <span class="fw-semibold">@Model.Project.CreatedAt.ToString("MMMM dd, yyyy")</span>
+        </div>
+    </div>
+
+
+    <!-- 🔍 Filter -->
+    <form method="get" class="mb-4">
+        <input type="hidden" name="id" value="@Model.Project.ProjectId" />
+        <label for="statusFilter" class="form-label fw-semibold">Filter Tasks by Status:</label>
+        <select name="StatusFilter" id="statusFilter" class="form-select w-auto d-inline-block ms-2" onchange="this.form.submit()">
+            <option value="All" selected="@("All" == Model.StatusFilter)">All</option>
+            <option value="Pending" selected="@("Pending" == Model.StatusFilter)">Pending</option>
+            <option value="In Progress" selected="@("In Progress" == Model.StatusFilter)">In Progress</option>
+            <option value="Completed" selected="@("Completed" == Model.StatusFilter)">Completed</option>
+        </select>
+    </form>
+
+    <!-- ➕ Add Task Button -->
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-page="/Tasks/Create_Task" asp-route-projectId="@Model.Project.ProjectId" class="btn btn-outline-success">+ Add Task</a>
+    </div>
+
+    <!-- 📋 Tasks Table -->
+    @if (Model.Project.Tasks?.Count > 0)
+    {
+        <table class="table table-hover table-bordered shadow-sm rounded">
+            <thead class="table-light">
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>📍 Location</th>
+                    <th>Actions</th>
+                    <th>Address</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var task in Model.Project.Tasks)
+                {
+                    <tr>
+                        <td>@task.Title</td>
+                        <td>
+                            @if (task.Status == "Completed")
+                            {
+                                <span class="badge bg-success">Completed</span>
+                            }
+                            else if (task.Status == "In Progress")
+                            {
+                                <span class="badge bg-warning text-dark">In Progress</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Pending</span>
+                            }
+                        </td>
+                        <td>@task.DueDate.ToShortDateString()</td>
+                        <td>
+                            @if (task.Latitude != null && task.Longitude != null)
+                            {
+                                <div class="d-flex flex-column">
+                                    <small class="text-muted">
+                                        @Math.Round(task.Latitude.Value, 4), @Math.Round(task.Longitude.Value, 4)
+                                    </small>
+                                    <a class="btn btn-sm btn-outline-info mt-1"
+                                       href="https://www.google.com/maps?q=@task.Latitude,@task.Longitude"
+                                       target="_blank">
+                                        View on Map 🌍
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No location</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a asp-page="/Tasks/Edit" asp-route-id="@task.TaskItemId" class="btn btn-sm btn-outline-primary">✏️ Edit</a>
+                                <a asp-page="/Tasks/Delete" asp-route-id="@task.TaskItemId" class="btn btn-sm btn-outline-danger">🗑️ Delete</a>
+                            </div>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(task.Address) && task.Address != "Unknown")
+                            {
+                                <span><i class="bi bi-geo-alt-fill text-primary me-1"></i>@task.Address</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No address added</span>
+                            }
+                        </td>
+
+
+
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="text-center text-muted">
+            <p class="mt-4">🙁 No tasks yet for this project.</p>
+        </div>
+    }
+
+
+    <a asp-page="./Index" class="btn btn-secondary mt-4">← Back to Projects</a>
+</div>

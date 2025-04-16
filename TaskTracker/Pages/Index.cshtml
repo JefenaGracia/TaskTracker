@@ -1,0 +1,18 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-5 fw-bold text-primary"> Welcome to TaskTracker</h1>
+        <p class="lead text-muted mt-3">
+            Manage your projects and tasks efficiently with our simple and powerful dashboard.
+        </p>
+
+        <a class="btn btn-success btn-lg mt-4 shadow" asp-page="/Projects/Index">
+            🚀 Go to Projects
+        </a>
+    </div>
+</div>

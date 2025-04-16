@@ -1,0 +1,35 @@
+﻿@page "{id:int}"
+@model TaskTracker.Pages.Projects.EditModel
+@{
+    ViewData["Title"] = "Edit Project";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">Edit Project</h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                <input type="hidden" asp-for="Project.ProjectId" />
+
+                <div class="mb-3">
+                    <label asp-for="Project.Name" class="form-label fw-semibold">📁 Project Name</label>
+                    <input asp-for="Project.Name" class="form-control" placeholder="Enter project title" />
+                    <span asp-validation-for="Project.Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Project.Description" class="form-label fw-semibold">📝 Description</label>
+                    <textarea asp-for="Project.Description" class="form-control" rows="4" placeholder="Brief project description..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-page="./Index" class="btn btn-outline-secondary">← Cancel</a>
+                    <button type="submit" class="btn btn-warning text-white fw-semibold">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
